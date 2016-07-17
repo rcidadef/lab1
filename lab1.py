@@ -11,7 +11,13 @@ def coleta_amostras(command, path, p):
     print '\n\n\n########################################'
     # Limitamos, para evitar encher o hd do raspberry.
     count = 0
-    while not p.poll():
+    while not p.poll() and p.returncode != 0:
+        # r = p.poll()
+        # r1 = p.returncode
+        # print r
+        # print r1
+        # print not r
+        # print not r1
         command1 = "top -bn 1 > tmp_top.out"
         subprocess.call(command1, shell=True)
         command2 = "grep {} tmp_top.out >> {}".format(command, path)
@@ -48,6 +54,33 @@ class Cactus:
         p = subprocess.Popen(["./exe/cactus_WaveDemo", "../WaveDemo.par"])
         coleta_amostras("cactus_WaveDemo", "cactus.out", p)
 
+class ls:
+
+    def __init__(self):
+        pass
+
+    def install(self):
+        pass
+
+    def execute(self):
+        p = subprocess.Popen("ls -al .", shell=True)
+        coleta_amostras("ls", "ls.out", p)
+
+class Gobmk:
+
+    def __init__(self):
+        pass
+
+    def install(self):
+        pass
+
+    def execute(self):
+        os.chdir("gobmk")
+        p = subprocess.Popen("gnugo -l 2k80-gokifu-20160710-Kim_Sooyong-Lee_Changseok.sgf "
+                  "--output-flags dv --level 21 --replay both "
+                  "-o 2k80-gokifu-20160710-Kim_Sooyong-Lee_Changseok.sgf.output", shell=True)
+        coleta_amostras("gnugo", "gobmk.out", p)
+
 
 class Geral:
     
@@ -83,10 +116,12 @@ def main():
     mapa = {}
     # mapa['geral'] = Geral()
     mapa['cactus'] = Cactus()
+    mapa['gobmk'] = Gobmk()
+    mapa['ls'] = ls()
 
     lista_programas = result.programs
     if result.programs == ['all']:
-        lista_programas = ['geral', 'cactus']
+        lista_programas = ['geral', 'cactus', 'gobmk', 'ls']
 
     for prog in lista_programas:
         if prog in mapa:
