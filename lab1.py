@@ -5,7 +5,7 @@ import time
 import argparse
 import subprocess
 
-def coleta_amostras(command, path, p):
+def coleta_amostras(command, path, p, sleep_time=2):
     print '########################################\n\n\n'
     print 'Iniciando coleta de amostras'
     print '\n\n\n########################################'
@@ -22,7 +22,7 @@ def coleta_amostras(command, path, p):
         subprocess.call(command1, shell=True)
         command2 = "grep {} tmp_top.out >> {}".format(command, path)
         subprocess.call(command2, shell=True)
-        time.sleep(2)
+        time.sleep(sleep_time)
         count += 1
         if count == 100000:
             break
@@ -54,17 +54,57 @@ class Cactus:
         p = subprocess.Popen(["./exe/cactus_WaveDemo", "../WaveDemo.par"])
         coleta_amostras("cactus_WaveDemo", "cactus.out", p)
 
-class ls:
-
-    def __init__(self):
-        pass
+class Gcc:
 
     def install(self):
         pass
 
     def execute(self):
-        p = subprocess.Popen("ls -al .", shell=True)
-        coleta_amostras("ls", "ls.out", p)
+        os.chdir('gcc')
+        
+        os.chdir('gcc_quicksort')
+        os.system("gcc -o quicksort quicksort.c")
+        p = subprocess.Popen(["./quicksort"])
+        coleta_amostras("quicksort", "gcc_quicksort.out", p)
+        
+        os.chdir('../gcc_buscabinaria')
+        os.system("gcc -o buscabinaria BuscaBinaria.c")
+        p = subprocess.Popen(["./buscabinaria"])
+        coleta_amostras("buscabinaria", "gcc_buscabinaria.out", p)
+        
+        os.chdir('../gcc_mergesort')
+        os.system("gcc -o mergesort mergesort.c")
+        p = subprocess.Popen(["./mergesort"])
+        coleta_amostras("mergesort", "gcc_mergesort.out", p)
+        
+        os.chdir('../gcc_ordinsert')
+        os.system("gcc -o ordinsert ordenacaoPorInsecao.c")
+        p = subprocess.Popen(["./ordinsert"])
+        coleta_amostras("ordinsert", "gcc_ordinsert.out", p)
+        
+        os.chdir('../gcc_ordselecao')
+        os.system("gcc -o ordselecao ordporselecao.c")
+        p = subprocess.Popen(["./ordselecao"])
+        coleta_amostras("ordselecao", "gcc_ordselecao.out", p)
+
+class Perl:
+
+    def execute(self):
+        os.system("cd perl")
+        os.chdir('perl/')
+        sleep_time = 0.1
+        
+        p = subprocess.Popen(["perl", "BuscaBinaria.perl"])
+        coleta_amostras("perl", "../amostras/BuscaBinariaPerl.out", p, sleep_time)
+
+        p = subprocess.Popen(["perl", "mergeSort.pl"])
+        coleta_amostras("perl", "../amostras/mergeSortPerl.out", p, sleep_time)
+
+        p = subprocess.Popen(["perl", "ordporselecao.perl"])
+        coleta_amostras("perl", "../amostras/ordporselecaoPerl.out", p, sleep_time)
+
+        p = subprocess.Popen(["perl", "QuickSort.perl"])
+        coleta_amostras("perl", "../amostras/QuickSortPerl.out", p, sleep_time)
 
 class Gobmk:
 
@@ -103,7 +143,18 @@ class Geral:
     def execute(self):
         pass
 
+class Bzip2:
 
+    def install(self):
+        pass
+
+    def execute(self):
+        os.chdir('bzip2')
+        p = subprocess.Popen("bzip2 -z \"Edvard Grieg - Peer Gynt Suites - 1 and 2.mp4\"", shell=True)
+        coleta_amostras("bzip2", "../amostras/bzip2.compressao.out", p)
+        
+        p = subprocess.Popen("bzip2 -d \"Edvard Grieg - Peer Gynt Suites - 1 and 2.mp4.bz2\"", shell=True)
+        coleta_amostras("bzip2", "../amostras/bzip2.descompressao.out", p)
 
 def main():
     parser = argparse.ArgumentParser(description='Script para automatizar execucao do Lab1 - Avaliacao de Desempenho')
@@ -112,16 +163,26 @@ def main():
     parser.add_argument('-p', '--programs', dest='programs', nargs='+', required=False, help='Lista de Programas (all para todos)')
 
     result = parser.parse_args()
+    
+    if not os.path.exists('amostras'):
+        os.system('mkdir amostras')
 
     mapa = {}
     # mapa['geral'] = Geral()
     mapa['cactus'] = Cactus()
     mapa['gobmk'] = Gobmk()
-    mapa['ls'] = ls()
+    mapa['gcc'] = Gcc()
+    mapa['perl'] = Perl()
+    mapa['bzip2'] = Bzip2()
 
     lista_programas = result.programs
     if result.programs == ['all']:
-        lista_programas = ['geral', 'cactus', 'gobmk', 'ls']
+        lista_programas = ['geral',
+                           'cactus',
+                           'gcc',
+                           'perl',
+                           'bzip2',
+                           'gobmk']
 
     for prog in lista_programas:
         if prog in mapa:
@@ -129,7 +190,6 @@ def main():
     			mapa[prog].install()
     		if result.execute:
     			mapa[prog].execute()
-
 
 if __name__ == "__main__":
     main()
