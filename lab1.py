@@ -44,14 +44,15 @@ class Cactus:
     def install(self):
         os.system("sudo apt-get install subversion")
         os.system("mkdir cactus")
-        os.system("cd cactus")
+        os.chdir("cactus")
         os.system("wget --no-check-certificate https://raw.github.com/gridaphobe/CRL/ET_2014_11/GetComponents")
         os.system("chmod 755 GetComponents")
         os.system("./GetComponents http://cactuscode.org/documentation/tutorials/wavetoydemo/WaveDemo.th")
-        os.system("cd Cactus")
-        os.system("y | make WaveDemo-config")
-        os.system("y | make WaveDemo")
-        os.system("y | make WaveDemo-testsuite")
+        os.chdir("Cactus")
+        # E necessario confirmar na hora de execucao
+        os.system("make WaveDemo-config")
+        os.system("make WaveDemo")
+        os.system("make WaveDemo-testsuite")
         os.system("wget http://www.cactuscode.org/documentation/tutorials/wavetoydemo/WaveDemo.par")
 
     def execute(self, n):
